@@ -34,4 +34,9 @@ html = f'''<!doctype html>
 </html>'''
 with open(path, 'w', encoding='utf-8') as f:
     f.write(html)
-print('saved', path)
+print('saved', path);
+import subprocess;
+try:
+    subprocess.run([str(Path(__file__).parent / 'convert_htmls_to_pdf.sh',), Path(path).name], check=True)
+except Exception:
+    pass
