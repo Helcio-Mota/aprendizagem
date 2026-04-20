@@ -1,0 +1,13 @@
+Mudança aplicada em 19/04/2026
+
+Modelo atual do OpenClaw:
+- localopenai/qwen2.5:3b
+
+Itens salvos para reversão:
+- backup datado da configuração anterior
+- backup do cache do agente e das sessões
+- script de restauração do modelo anterior
+
+Para reverter:
+1. executar o script de restauração salvo na pasta pessoal
+2. o serviço do Gateway será reiniciado automaticamente

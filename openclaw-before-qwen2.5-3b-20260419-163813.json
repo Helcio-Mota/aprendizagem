@@ -1,0 +1,211 @@
+{
+  "agents": {
+    "defaults": {
+      "workspace": "/home/aprimoraia/.openclaw/wa-lite",
+      "model": {
+        "primary": "localopenai/qwen2.5:0.5b"
+      },
+      "models": {
+        "localopenai/qwen2.5:0.5b": {}
+      },
+      "llm": {
+        "idleTimeoutSeconds": 0
+      },
+      "experimental": {
+        "localModelLean": true
+      },
+      "skills": [],
+      "skipBootstrap": true,
+      "contextInjection": "continuation-skip",
+      "bootstrapMaxChars": 1200,
+      "bootstrapTotalMaxChars": 3000,
+      "contextTokens": 16384,
+      "systemPromptOverride": "Você é um assistente cordial e objetivo. Responda sempre e somente em português do Brasil, com ortografia correta, sem misturar idiomas. Se o usuário escrever em outro idioma, responda em português explicando que seu idioma padrão é português do Brasil e pergunte se ele deseja tradução ou continuação em português. Nunca misture palavras de idiomas diferentes na mesma frase. Se houver dúvida, peça reformulação em português claro."
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "mode": "token",
+      "token": "ae5e4b4f084fcd9544569f288242ac8f073222ede9b10546"
+    },
+    "port": 18789,
+    "bind": "loopback",
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    },
+    "controlUi": {
+      "allowInsecureAuth": true
+    },
+    "nodes": {
+      "denyCommands": [
+        "camera.snap",
+        "camera.clip",
+        "screen.record",
+        "contacts.add",
+        "calendar.add",
+        "reminders.add",
+        "sms.send",
+        "sms.search"
+      ]
+    }
+  },
+  "meta": {
+    "lastTouchedVersion": "2026.4.15",
+    "lastTouchedAt": "2026-04-19T16:52:19.188Z"
+  },
+  "session": {
+    "dmScope": "per-channel-peer"
+  },
+  "tools": {
+    "profile": "minimal",
+    "allow": []
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "ollama": {
+        "baseUrl": "http://127.0.0.1:11434",
+        "api": "ollama",
+        "apiKey": "OLLAMA_API_KEY",
+        "models": [
+          {
+            "id": "gemma4",
+            "name": "gemma4",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 128000,
+            "maxTokens": 8192
+          },
+          {
+            "id": "smollm2:360m",
+            "name": "smollm2:360m",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 8192,
+            "maxTokens": 8192
+          },
+          {
+            "id": "qwen2.5:0.5b",
+            "name": "qwen2.5:0.5b",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 32768,
+            "maxTokens": 8192
+          },
+          {
+            "id": "qwen2.5-coder:7b",
+            "name": "qwen2.5-coder:7b",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 32768,
+            "maxTokens": 8192
+          }
+        ]
+      },
+      "localopenai": {
+        "baseUrl": "http://127.0.0.1:11434/v1",
+        "api": "openai-completions",
+        "apiKey": "ollama",
+        "models": [
+          {
+            "id": "qwen2.5:0.5b",
+            "name": "qwen2.5:0.5b",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 32768,
+            "maxTokens": 8192
+          },
+          {
+            "id": "smollm2:360m",
+            "name": "smollm2:360m",
+            "reasoning": false,
+            "input": [
+              "text"
+            ],
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0
+            },
+            "contextWindow": 8192,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  },
+  "auth": {
+    "profiles": {
+      "ollama:default": {
+        "provider": "ollama",
+        "mode": "api_key"
+      }
+    }
+  },
+  "channels": {
+    "whatsapp": {
+      "selfChatMode": true,
+      "dmPolicy": "open",
+      "allowFrom": [
+        "*"
+      ],
+      "enabled": true,
+      "reactionLevel": "ack",
+      "ackReaction": {
+        "emoji": "👀",
+        "direct": true,
+        "group": "mentions"
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "ollama": {
+        "enabled": true
+      }
+    }
+  }
+}
