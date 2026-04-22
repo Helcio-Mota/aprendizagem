@@ -38,13 +38,6 @@ html = f'''<!doctype html>
 with open(path, 'w', encoding='utf-8') as f:
     f.write(html)
 print('saved', path)
-# try convert to PDF if script present
-conv = os.path.join(os.path.dirname(__file__), 'convert_htmls_to_pdf.sh')
-try:
-    if os.path.isfile(conv) and os.access(conv, os.X_OK):
-        subprocess.run([conv, os.path.basename(path)], check=False)
-except Exception:
-    pass
 # try to open in Chrome in a new window (non-blocking)
 chrome = shutil.which('google-chrome') or shutil.which('chromium') or shutil.which('chromium-browser')
 if chrome:
