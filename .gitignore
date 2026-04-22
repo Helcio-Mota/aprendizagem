@@ -1,6 +1,1 @@
-# ignore large local runtime state
-node_modules/
-*.log
-*.sqlite
-.openclaw/
-.DS_Store
+TEMP/

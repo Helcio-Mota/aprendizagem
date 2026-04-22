@@ -1,5 +1,0 @@
-{
-  "enabled": true,
-  "threshold_lines": 15,
-  "output_dir": "."
-}
