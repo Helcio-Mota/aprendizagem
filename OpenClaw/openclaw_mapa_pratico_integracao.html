@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mapa Prático — OpenClaw + Ollama</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121933;
+      --panel2: #0e1630;
+      --text: #edf2ff;
+      --muted: #afbad8;
+      --line: #26345f;
+      --accent: #7ab3ff;
+      --ok: #2ecc71;
+      --warn: #f1c40f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+      background: linear-gradient(180deg, var(--bg), #11182f);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 18px 56px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #182451, #0f1733);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 26px;
+      box-shadow: 0 16px 40px rgba(0,0,0,.28);
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      background: rgba(46,204,113,.12);
+      color: #a6f0c1;
+    }
+    h1, h2, h3 { margin: 0 0 10px; }
+    h1 { font-size: 30px; }
+    h2 {
+      margin-top: 28px;
+      font-size: 22px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 8px;
+    }
+    p, li { color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 15px;
+    }
+    .callout {
+      background: rgba(122,179,255,.08);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--accent);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-top: 14px;
+      color: var(--text);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: rgba(122,179,255,.08);
+      color: #d4e4ff;
+    }
+    .step {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 12px;
+      margin: 12px 0;
+      align-items: start;
+    }
+    .step .n {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(122,179,255,.12);
+      border: 1px solid var(--line);
+      font-weight: 800;
+      color: #d7e7ff;
+    }
+    .footer {
+      margin-top: 26px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .ok { color: #a6f0c1; }
+    .warn { color: #ffe08a; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="badge">Mapa prático validado</div>
+      <h1>Como integrar melhor OpenClaw + Ollama</h1>
+      <p>
+        Este material resume, de forma direta, o que o OpenClaw consegue fazer, como o Ollama entra nessa arquitetura
+        e qual é o desenho prático recomendado para transformar essa integração em um assistente realmente útil no WhatsApp.
+      </p>
+      <div class="grid">
+        <div class="card">
+          <h3>Canal atual</h3>
+          <p><strong>WhatsApp ativo</strong></p>
+        </div>
+        <div class="card">
+          <h3>Modelo recomendado</h3>
+          <p><strong>Qwen 2.5 1.5B</strong></p>
+        </div>
+        <div class="card">
+          <h3>Papel do Ollama</h3>
+          <p>Inferência local</p>
+        </div>
+        <div class="card">
+          <h3>Papel do OpenClaw</h3>
+          <p>Orquestração e execução</p>
+        </div>
+      </div>
+    </section>
+
+    <h2>1. Regra principal da arquitetura</h2>
+    <div class="callout">
+      <strong>Ollama não substitui o OpenClaw.</strong><br>
+      O Ollama gera linguagem. O OpenClaw conecta canais, mantém sessões, aplica políticas, chama Skills,
+      aciona integrações e devolve a resposta ao usuário.
+    </div>
+
+    <h2>2. Fluxo prático da integração</h2>
+    <div class="step"><div class="n">1</div><div><strong>O usuário envia uma mensagem</strong><p>Exemplo: via WhatsApp, grupo ou canal conectado.</p></div></div>
+    <div class="step"><div class="n">2</div><div><strong>O OpenClaw recebe e organiza a sessão</strong><p>Ele identifica o remetente, aplica política de acesso e monta o contexto útil.</p></div></div>
+    <div class="step"><div class="n">3</div><div><strong>O OpenClaw chama o Ollama</strong><p>O modelo local processa a solicitação e sugere a próxima ação ou a resposta final.</p></div></div>
+    <div class="step"><div class="n">4</div><div><strong>O OpenClaw executa habilidades</strong><p>Se for preciso agir, ele usa Skills, canais, aprovações, plugins ou MCP.</p></div></div>
+    <div class="step"><div class="n">5</div><div><strong>A resposta volta ao canal</strong><p>O resultado é entregue ao WhatsApp de forma controlada e rastreável.</p></div></div>
+
+    <h2>3. O que o OpenClaw é capaz de fazer</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Área</th>
+          <th>Capacidade prática</th>
+          <th>Uso recomendado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Canais</td>
+          <td>WhatsApp, além de vários outros canais e rotas de conversa</td>
+          <td>Atendimento, automação e assistente pessoal</td>
+        </tr>
+        <tr>
+          <td>Skills</td>
+          <td>Instalação e uso de habilidades prontas ou personalizadas</td>
+          <td>GitHub, notas, documentos, automações e integrações</td>
+        </tr>
+        <tr>
+          <td>MCP</td>
+          <td>Ponte com clientes e servidores de ferramentas externos</td>
+          <td>Expor ferramentas de contexto, leitura, envio e eventos</td>
+        </tr>
+        <tr>
+          <td>Aprovações</td>
+          <td>Controle para execuções sensíveis</td>
+          <td>Evitar ações perigosas sem consentimento</td>
+        </tr>
+        <tr>
+          <td>Agentes</td>
+          <td>Execução local, por sessão, por canal e com roteamento</td>
+          <td>Separar conversa, tarefas e automação</td>
+        </tr>
+        <tr>
+          <td>Observabilidade</td>
+          <td>Logs, health, status e sessões</td>
+          <td>Diagnóstico e tuning de performance</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>4. Como o Ollama “pede” ao OpenClaw para agir</h2>
+    <p>
+      Na prática, isso acontece através do <strong>runtime do OpenClaw</strong>. O modelo local recebe instruções,
+      entende quando precisa usar uma ferramenta e o OpenClaw executa a operação de verdade.
+    </p>
+    <ul>
+      <li>O modelo sugere a ação.</li>
+      <li>O OpenClaw valida se a ferramenta está disponível.</li>
+      <li>Se permitido, a Skill ou integração é executada.</li>
+      <li>O resultado volta para o modelo ou diretamente para o usuário.</li>
+    </ul>
+
+    <h2>5. Mapa prático recomendado para o seu ambiente</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Camada</th>
+          <th>Escolha recomendada</th>
+          <th>Motivo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Canal principal</td>
+          <td>WhatsApp</td>
+          <td>Já está conectado e validado</td>
+        </tr>
+        <tr>
+          <td>Orquestrador</td>
+          <td>OpenClaw Gateway</td>
+          <td>Gerencia sessão, permissões, skills e entrega</td>
+        </tr>
+        <tr>
+          <td>LLM padrão</td>
+          <td>Qwen 2.5 1.5B</td>
+          <td>Melhor equilíbrio entre qualidade e velocidade</td>
+        </tr>
+        <tr>
+          <td>LLM leve</td>
+          <td>Qwen 2.5 0.5B</td>
+          <td>Tarefas menores e verificações internas</td>
+        </tr>
+        <tr>
+          <td>LLM de qualidade</td>
+          <td>Qwen 2.5 3B sob demanda</td>
+          <td>Funciona, mas é lento para conversa diária</td>
+        </tr>
+        <tr>
+          <td>Prompt</td>
+          <td>Curto, objetivo e em português</td>
+          <td>Reduz latência e melhora consistência</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>6. Skills que fazem mais sentido instalar depois</h2>
+    <div class="grid">
+      <div class="card"><h3>GitHub</h3><p>Issues, PRs, status de pipeline e revisão.</p></div>
+      <div class="card"><h3>Coding Agent</h3><p>Delegar tarefas de código quando necessário.</p></div>
+      <div class="card"><h3>Notion / Obsidian</h3><p>Base de conhecimento e memória útil.</p></div>
+      <div class="card"><h3>Email / Docs</h3><p>Automação documental e produtividade pessoal.</p></div>
+      <div class="card"><h3>Healthcheck</h3><p>Auditoria de segurança e saúde do host.</p></div>
+      <div class="card"><h3>MCP externo</h3><p>Conectar ferramentas próprias e APIs especializadas.</p></div>
+    </div>
+
+    <h2>7. Quando usar MCP</h2>
+    <p>
+      Use MCP quando quiser que o OpenClaw converse com outras ferramentas ou quando quiser expor conversas e ações para um cliente mais avançado.
+    </p>
+    <ul>
+      <li><strong>OpenClaw como servidor MCP:</strong> bom para expor conversas, histórico e envio de mensagens.</li>
+      <li><strong>OpenClaw como cliente de registro MCP:</strong> bom para cadastrar servidores externos que o runtime poderá consumir depois.</li>
+    </ul>
+
+    <h2>8. Melhorias práticas para evoluir daqui</h2>
+    <ol>
+      <li>Instalar apenas as Skills que tragam valor real ao seu fluxo.</li>
+      <li>Separar tarefas rápidas e tarefas pesadas por modelo.</li>
+      <li>Manter o prompt simples, curto e disciplinado.</li>
+      <li>Usar aprovações para qualquer ação sensível.</li>
+      <li>Se quiser mais ação e menos conversa, aumentar o uso de Skills e MCP.</li>
+    </ol>
+
+    <h2>9. Conclusão executiva</h2>
+    <div class="callout">
+      O melhor cenário para o seu ambiente é:<br><br>
+      <strong>OpenClaw como cérebro operacional</strong> + <strong>Ollama como motor local de linguagem</strong> + <strong>Skills/MCP para executar ações reais</strong>.<br><br>
+      Esse desenho é o que transforma um chatbot local em um assistente de verdade.
+    </div>
+
+    <div class="footer">
+      Documento gerado em 20/04/2026 para apoio à evolução do ambiente OpenClaw + Ollama.
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relatório Técnico — Melhoria da Conexão OpenClaw/Ollama</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121933;
+      --panel-2: #0f1530;
+      --text: #e8ecf8;
+      --muted: #aab5d1;
+      --ok: #2ecc71;
+      --warn: #f1c40f;
+      --bad: #ff6b6b;
+      --accent: #6ea8fe;
+      --line: #243055;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+      background: linear-gradient(180deg, var(--bg), #10162b);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .wrap {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #17214a, #0e1632);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    h1, h2, h3 { margin: 0 0 12px; }
+    h1 { font-size: 30px; }
+    h2 {
+      margin-top: 26px;
+      font-size: 22px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    p { color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+    .ok { background: rgba(46,204,113,.14); color: #9df0be; }
+    .warn { background: rgba(241,196,15,.12); color: #ffe08a; }
+    .bad { background: rgba(255,107,107,.12); color: #ffb0b0; }
+    ul { color: var(--muted); }
+    li { margin: 8px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+    }
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: #cfe0ff; background: rgba(110,168,254,.08); }
+    .small { font-size: 13px; color: var(--muted); }
+    .footer {
+      margin-top: 26px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    code {
+      color: #cfe0ff;
+      background: rgba(255,255,255,.05);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="badge ok">Status atual validado</div>
+      <h1>Relatório técnico — Melhoria da conexão OpenClaw/Ollama</h1>
+      <p>
+        Este relatório resume os ajustes aplicados para estabilizar e acelerar a integração entre o Gateway do OpenClaw e o Ollama,
+        especialmente para uso via WhatsApp, com foco em reduzir timeouts, simplificar o contexto e preservar um perfil de resposta mais confiável.
+      </p>
+      <div class="grid">
+        <div class="card">
+          <h3>Gateway</h3>
+          <p><strong>Ativo</strong></p>
+        </div>
+        <div class="card">
+          <h3>Modelo principal</h3>
+          <p><strong>localopenai/qwen2.5:1.5b</strong></p>
+        </div>
+        <div class="card">
+          <h3>Modelos mantidos</h3>
+          <p>3B, 1.5B e 0.5B</p>
+        </div>
+        <div class="card">
+          <h3>Objetivo</h3>
+          <p>Melhorar estabilidade e tempo de resposta</p>
+        </div>
+      </div>
+    </section>
+
+    <h2>1. Problema observado</h2>
+    <ul>
+      <li>O WhatsApp recebia a mensagem, mas o fluxo do agente sofria com lentidão excessiva e timeouts.</li>
+      <li>O caminho nativo entre OpenClaw e Ollama mostrou comportamento pior do que o teste direto no Ollama.</li>
+      <li>Modelos maiores entregavam melhor qualidade, mas com tempo de resposta alto demais para uso conversacional.</li>
+    </ul>
+
+    <h2>2. Diagnóstico da causa</h2>
+    <ul>
+      <li>A conectividade base estava saudável: mensagens entravam no Gateway e os eventos apareciam no journal.</li>
+      <li>O gargalo principal estava na camada de inferência embutida e no peso do prompt/contexto.</li>
+      <li>Também foi confirmado que reduzir o contexto abaixo de aproximadamente <strong>16000 tokens</strong> quebra o fluxo do modelo no OpenClaw.</li>
+    </ul>
+
+    <h2>3. Ajustes aplicados que melhoraram a conexão</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Ajuste</th>
+          <th>O que foi feito</th>
+          <th>Efeito prático</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Troca do caminho de conexão</td>
+          <td>Uso do endpoint compatível com OpenAI do Ollama via <code>localopenai</code> apontando para <code>127.0.0.1:11434/v1</code>.</td>
+          <td>Eliminou o caminho que mais gerava timeout e restaurou respostas válidas.</td>
+        </tr>
+        <tr>
+          <td>Workspace mínimo</td>
+          <td>Criação de um workspace leve para o agente, sem carga desnecessária.</td>
+          <td>Menos contexto inútil e menor custo por interação.</td>
+        </tr>
+        <tr>
+          <td>Prompt enxuto em português</td>
+          <td>Sistema instruído para responder sempre em português do Brasil, de forma breve.</td>
+          <td>Melhor qualidade das respostas e menos desperdício de tokens.</td>
+        </tr>
+        <tr>
+          <td>Redução de bootstrap e ferramentas</td>
+          <td>Bootstrap encurtado, skills vazias, contexto mínimo e fluxo simplificado.</td>
+          <td>Menor sobrecarga antes da inferência principal.</td>
+        </tr>
+        <tr>
+          <td>Timeout ocioso ajustado</td>
+          <td><code>idleTimeoutSeconds = 0</code> para evitar abortos prematuros.</td>
+          <td>Mais estabilidade em conversas lentas.</td>
+        </tr>
+        <tr>
+          <td>Roteamento de modelos</td>
+          <td>Perfil final com <strong>1.5B</strong> como principal e <strong>0.5B</strong> para operações leves; o <strong>3B</strong> foi mantido para teste.</td>
+          <td>Melhor equilíbrio entre qualidade e velocidade.</td>
+        </tr>
+        <tr>
+          <td>Limite de resposta</td>
+          <td>Saídas máximas menores para evitar respostas longas demais.</td>
+          <td>Tempo final mais previsível.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>4. Evidências de desempenho</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Cenário</th>
+          <th>Resultado</th>
+          <th>Leitura</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Teste direto do Ollama com Qwen 1.5B</td>
+          <td>aprox. 5 s</td>
+          <td>Bom tempo bruto do modelo isolado.</td>
+        </tr>
+        <tr>
+          <td>OpenClaw ajustado com 1.5B</td>
+          <td>aprox. 28,3 s de duração do agente</td>
+          <td>Melhora perceptível e perfil mais utilizável.</td>
+        </tr>
+        <tr>
+          <td>Teste direto do Ollama com Qwen 3B</td>
+          <td>22,4 s</td>
+          <td>Qualidade maior, porém já mais pesado.</td>
+        </tr>
+        <tr>
+          <td>OpenClaw com Qwen 3B</td>
+          <td>100,3 s de duração do agente; 246,6 s no comando total</td>
+          <td>Funciona, mas ficou lento demais para o WhatsApp.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>5. Estado final recomendado</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="badge ok">Recomendado</div>
+        <h3>Modelo principal</h3>
+        <p><strong>Qwen 2.5 1.5B</strong></p>
+      </div>
+      <div class="card">
+        <div class="badge warn">Mantido para teste</div>
+        <h3>Modelo maior</h3>
+        <p><strong>Qwen 2.5 3B</strong></p>
+      </div>
+      <div class="card">
+        <div class="badge ok">Suporte leve</div>
+        <h3>Modelo auxiliar</h3>
+        <p><strong>Qwen 2.5 0.5B</strong></p>
+      </div>
+    </div>
+
+    <h2>6. Conclusão</h2>
+    <p>
+      A melhoria real veio de <strong>trocar o caminho de integração</strong>, <strong>enxugar o contexto</strong>, <strong>limitar o tamanho das respostas</strong>
+      e <strong>usar um modelo intermediário</strong> como padrão. Com isso, a conexão OpenClaw/Ollama passou de um estado instável e sujeito a timeout
+      para um fluxo funcional, consistente e bem mais adequado ao uso diário.
+    </p>
+
+    <div class="footer">
+      Relatório gerado em 20/04/2026 para documentação técnica do ambiente local OpenClaw + Ollama.
+    </div>
+  </div>
+</body>
+</html>

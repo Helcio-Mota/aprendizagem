@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Resumo da Configuração OpenClaw</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #121933;
+      --text: #eef2ff;
+      --muted: #b8c0ff;
+      --accent: #6ea8fe;
+      --ok: #7ee787;
+      --warn: #ffd866;
+      --border: #2a3566;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #0b1020, #11162a);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .wrap {
+      max-width: 980px;
+      margin: 40px auto;
+      padding: 24px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    h1, h2 { margin-top: 0; }
+    h1 { color: var(--accent); }
+    h2 { margin-top: 28px; color: #dbe5ff; }
+    ul { padding-left: 22px; }
+    li { margin: 8px 0; }
+    .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+    .ok { background: rgba(126,231,135,.15); color: var(--ok); border: 1px solid rgba(126,231,135,.35); }
+    .warn { background: rgba(255,216,102,.12); color: var(--warn); border: 1px solid rgba(255,216,102,.28); }
+    .muted { color: var(--muted); }
+    blockquote {
+      margin: 16px 0;
+      padding: 14px 16px;
+      border-left: 4px solid var(--accent);
+      background: rgba(110,168,254,.08);
+      border-radius: 8px;
+    }
+    code {
+      background: rgba(255,255,255,.08);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>✅ Resumo da Configuração do OpenClaw</h1>
+
+      <p>
+        <span class="badge ok">Gateway ativo</span>
+        <span class="badge ok">WhatsApp conectado</span>
+        <span class="badge ok">Modelo respondendo</span>
+      </p>
+
+      <blockquote>
+        Configurei o OpenClaw para funcionar no WhatsApp com modelo local via Ollama, corrigindo o timeout interno do agente.
+      </blockquote>
+
+      <h2>Ajustes realizados</h2>
+      <ul>
+        <li>Serviço do Gateway mantido no <code>systemd --user</code>.</li>
+        <li>Workspace leve definido em <code>~/.openclaw/wa-lite</code>.</li>
+        <li>Prompt do sistema simplificado em português do Brasil.</li>
+        <li>Perfil mínimo de ferramentas para reduzir sobrecarga.</li>
+        <li>Contexto do agente reduzido para operação mais leve.</li>
+        <li><code>idleTimeoutSeconds</code> ajustado para evitar bloqueio por inatividade.</li>
+        <li>Modelo principal ajustado para a rota compatível <code>localopenai/qwen2.5:0.5b</code>.</li>
+        <li>Endpoint compatível do Ollama usado em <code>http://127.0.0.1:11434/v1</code>.</li>
+        <li>Canal do WhatsApp mantido em estado conectado e pronto para testes.</li>
+      </ul>
+
+      <h2>Causa do problema</h2>
+      <ul>
+        <li>O conector nativo anterior do OpenClaw com Ollama entrava em timeout no fluxo embutido.</li>
+        <li>A solução foi usar a rota compatível OpenAI do Ollama e simplificar o ambiente do agente.</li>
+      </ul>
+
+      <h2>Resultado validado</h2>
+      <ul>
+        <li>O agente voltou a responder sem o erro de timeout.</li>
+        <li>Teste local concluído com resposta em cerca de 18,6 segundos.</li>
+        <li>Status final confirmado: Gateway reachable e WhatsApp connected.</li>
+      </ul>
+
+      <p class="muted">Gerado em 19 de abril de 2026.</p>
+    </div>
+  </div>
+</body>
+</html>

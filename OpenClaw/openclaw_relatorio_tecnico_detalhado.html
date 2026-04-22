@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Relatório Técnico Detalhado — OpenClaw, Ollama e WhatsApp</title>
+  <style>
+    :root {
+      --bg:#0b1220; --panel:#121a2b; --card:#182338; --text:#edf2ff; --muted:#b9c4de;
+      --accent:#79b8ff; --ok:#7ee787; --warn:#ffcd56; --border:#2e3d5c;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Arial, Helvetica, sans-serif; background:var(--bg); color:var(--text); line-height:1.65; }
+    .wrap { max-width:1180px; margin:32px auto; padding:20px; }
+    .section { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:18px; }
+    .box { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    h1 { margin:0 0 10px; color:var(--accent); }
+    h2 { margin:0 0 12px; color:#dbeafe; }
+    h3 { margin:16px 0 8px; color:#bfdbfe; }
+    p, li { color:var(--text); }
+    .muted { color:var(--muted); }
+    .badge { display:inline-block; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:bold; margin-right:8px; }
+    .ok { background:rgba(126,231,135,.15); color:var(--ok); border:1px solid rgba(126,231,135,.35); }
+    .warn { background:rgba(255,205,86,.12); color:var(--warn); border:1px solid rgba(255,205,86,.30); }
+    code, pre { background:#09101d; color:#d1fae5; border-radius:8px; }
+    code { padding:2px 6px; }
+    pre { padding:14px; overflow:auto; white-space:pre-wrap; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { border:1px solid var(--border); padding:10px; text-align:left; vertical-align:top; }
+    th { background:#162134; }
+    .note { border-left:4px solid var(--accent); padding:10px 12px; background:rgba(121,184,255,.08); border-radius:8px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="section">
+      <h1>Relatório Técnico Detalhado — Correção da Lentidão entre OpenClaw, Ollama e WhatsApp</h1>
+      <p>
+        <span class="badge ok">Gateway operacional</span>
+        <span class="badge ok">WhatsApp conectado</span>
+        <span class="badge ok">Respostas restabelecidas</span>
+      </p>
+      <p class="muted">Versão detalhada, focada em diagnóstico, causa raiz, mitigação aplicada e validação do resultado.</p>
+    </section>
+
+    <section class="section">
+      <h2>1. Objetivo deste documento</h2>
+      <p>Este relatório descreve, em detalhe técnico, as ações executadas para resolver a lentidão e os timeouts observados na integração entre OpenClaw, Ollama e o canal WhatsApp.</p>
+      <p>O foco foi restabelecer a resposta do agente com celeridade, sem perder a operação do Gateway e do canal já conectado.</p>
+    </section>
+
+    <section class="section">
+      <h2>2. Sintoma inicial</h2>
+      <ul>
+        <li>Mensagens enviadas pelo WhatsApp eram recebidas pelo Gateway.</li>
+        <li>O OpenClaw enviava reação visual de recebimento, confirmando inbound ativo.</li>
+        <li>O agente não retornava resposta textual antes do idle timeout.</li>
+        <li>O modelo respondia quando testado diretamente no Ollama, fora do fluxo embutido.</li>
+      </ul>
+      <div class="note"><strong>Leitura técnica:</strong> havia funcionamento parcial do pipeline. Transporte e recepção estavam corretos; a falha estava no caminho de inferência/orquestração do agente.</div>
+    </section>
+
+    <section class="section">
+      <h2>3. Hipótese confirmada</h2>
+      <div class="grid">
+        <div class="box">
+          <h3>O que não era o problema</h3>
+          <ul>
+            <li>Não era o pareamento do WhatsApp.</li>
+            <li>Não era falta de chegada da mensagem.</li>
+            <li>Não era indisponibilidade do serviço principal.</li>
+            <li>Não era lentidão pura do Ollama em modo direto.</li>
+          </ul>
+        </div>
+        <div class="box">
+          <h3>O que era o problema</h3>
+          <ul>
+            <li>O conector nativo anterior do OpenClaw com Ollama travava no fluxo embutido.</li>
+            <li>O prompt do agente estava pesado demais para o modelo local escolhido.</li>
+            <li>O watchdog de ociosidade interrompia a geração antes da resposta útil.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>4. Soluções aplicadas, passo a passo</h2>
+
+      <h3>4.1. Isolamento do gargalo</h3>
+      <p>Foram executados testes comparativos entre:</p>
+      <ul>
+        <li>resposta direta do Ollama</li>
+        <li>resposta pelo agente local do OpenClaw</li>
+        <li>mensagem real entrando pelo WhatsApp</li>
+      </ul>
+      <p>O contraste mostrou que o timeout ocorria no caminho embutido do OpenClaw, e não no modelo isolado.</p>
+
+      <h3>4.2. Criação de um workspace mínimo</h3>
+      <p>Foi criado um ambiente leve para o agente em:</p>
+      <pre>/home/aprimoraia/.openclaw/wa-lite</pre>
+      <p>Isso reduziu drasticamente a quantidade de contexto e arquivos de bootstrap que antes eram injetados no prompt do modelo.</p>
+
+      <h3>4.3. Simplificação do prompt-base</h3>
+      <p>O agente passou a operar com uma instrução curta, focada e em português, reduzindo ruído e custo por turno.</p>
+
+      <h3>4.4. Redução do peso operacional do agente</h3>
+      <ul>
+        <li>menos contexto de bootstrap</li>
+        <li>menos ferramentas expostas</li>
+        <li>ambiente mais adequado para modelo local pequeno</li>
+      </ul>
+
+      <h3>4.5. Ajuste do idle timeout</h3>
+      <p>O timeout por ociosidade do LLM foi ajustado para não abortar o processamento prematuramente no meio da geração.</p>
+
+      <h3>4.6. Troca da rota de inferência</h3>
+      <p>A principal correção técnica foi redirecionar o modelo para a rota compatível OpenAI exposta pelo Ollama, em vez de insistir no caminho nativo que apresentava timeout.</p>
+      <pre>http://127.0.0.1:11434/v1</pre>
+      <p>Modelo efetivo utilizado:</p>
+      <pre>localopenai/qwen2.5:0.5b</pre>
+
+      <h3>4.7. Reinício controlado do Gateway</h3>
+      <p>Após cada ajuste relevante, o serviço foi reiniciado para carregar a configuração corrigida, mantendo o canal do WhatsApp funcional.</p>
+    </section>
+
+    <section class="section">
+      <h2>5. Comparativo técnico</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Aspecto</th>
+            <th>Antes da correção</th>
+            <th>Depois da correção</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Canal WhatsApp</td>
+            <td>Recebia a mensagem, mas sem resposta útil</td>
+            <td>Recebe e mantém fluxo de resposta</td>
+          </tr>
+          <tr>
+            <td>OpenClaw → Ollama</td>
+            <td>Timeout no fluxo embutido nativo</td>
+            <td>Rota compatível OpenAI funcionando</td>
+          </tr>
+          <tr>
+            <td>Prompt do agente</td>
+            <td>Mais pesado e disperso</td>
+            <td>Mais leve, curto e focado</td>
+          </tr>
+          <tr>
+            <td>Workspace</td>
+            <td>Contexto mais carregado</td>
+            <td>Workspace mínimo dedicado</td>
+          </tr>
+          <tr>
+            <td>Latência</td>
+            <td>Travamento / timeout</td>
+            <td>Resposta com celeridade</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>6. Resultado validado</h2>
+      <ul>
+        <li>O serviço do Gateway permaneceu ativo.</li>
+        <li>A porta local do OpenClaw respondeu normalmente.</li>
+        <li>O WhatsApp seguiu em estado conectado.</li>
+        <li>O agente voltou a entregar resposta sem o bloqueio que ocorria antes.</li>
+      </ul>
+      <div class="note"><strong>Resultado técnico consolidado:</strong> a lentidão crítica foi resolvida ao trocar o caminho de inferência e reduzir o peso do ambiente do agente, preservando a conectividade com o WhatsApp.</div>
+    </section>
+
+    <section class="section">
+      <h2>7. Limites e próximos ajustes possíveis</h2>
+      <p>Depois da correção de lentidão, o ponto remanescente passou a ser a qualidade linguística do modelo pequeno em português. Isso é um tema separado da conectividade e pode ser refinado sem desmontar a solução já estabilizada.</p>
+    </section>
+
+    <section class="section">
+      <h2>8. Como compartilhar este relatório por e-mail</h2>
+      <ol>
+        <li>Abra o arquivo HTML salvo no computador.</li>
+        <li>No seu e-mail, clique em <strong>Anexar arquivo</strong>.</li>
+        <li>Selecione o arquivo abaixo:</li>
+      </ol>
+      <pre>/home/aprimoraia/openclaw_relatorio_tecnico_detalhado.html</pre>
+      <p>Sugestão de assunto do e-mail:</p>
+      <pre>Relatório técnico — Correção de lentidão OpenClaw + Ollama + WhatsApp</pre>
+      <p>Sugestão de mensagem:</p>
+      <pre>Segue em anexo o relatório técnico detalhado com o diagnóstico, a causa raiz e as ações aplicadas para restaurar a resposta com celeridade entre OpenClaw, Ollama e WhatsApp.</pre>
+    </section>
+  </div>
+</body>
+</html>
