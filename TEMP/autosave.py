@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-import sys, json, os, datetime
+import sys, json, os, datetime, subprocess, shutil
 cfg_path = os.path.join(os.path.dirname(__file__), 'autosave_config.json')
 try:
     cfg = json.load(open(cfg_path))
 except Exception:
-    cfg = {"enabled": True, "threshold_lines": 15, "output_dir": "TEMP"}
+    cfg = {"enabled": True, "threshold_lines": 15, "output_dir": "."}
 text = sys.stdin.read()
 lines = text.count('\n') + (1 if text and not text.endswith('\n') else 0)
 if not cfg.get('enabled', True):
@@ -13,9 +13,12 @@ if not cfg.get('enabled', True):
 if lines < cfg.get('threshold_lines', 15):
     print(f'skipping save: {lines} lines < threshold', file=sys.stderr)
     sys.exit(0)
-outdir = os.path.join(os.path.dirname(__file__), cfg.get('output_dir', 'TEMP'))
-if not os.path.isabs(outdir):
-    outdir = os.path.join(os.path.dirname(__file__), cfg.get('output_dir', 'TEMP'))
+# determine output dir: if relative, relative to this script dir
+outdir_cfg = cfg.get('output_dir', '.')
+if os.path.isabs(outdir_cfg):
+    outdir = outdir_cfg
+else:
+    outdir = os.path.normpath(os.path.join(os.path.dirname(__file__), outdir_cfg))
 os.makedirs(outdir, exist_ok=True)
 ts = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 fname = f'assistant_response_{ts}.html'
@@ -34,9 +37,18 @@ html = f'''<!doctype html>
 </html>'''
 with open(path, 'w', encoding='utf-8') as f:
     f.write(html)
-print('saved', path);
-import subprocess;
+print('saved', path)
+# try convert to PDF if script present
+conv = os.path.join(os.path.dirname(__file__), 'convert_htmls_to_pdf.sh')
 try:
-    subprocess.run([str(Path(__file__).parent / 'convert_htmls_to_pdf.sh',), Path(path).name], check=True)
+    if os.path.isfile(conv) and os.access(conv, os.X_OK):
+        subprocess.run([conv, os.path.basename(path)], check=False)
 except Exception:
     pass
+# try to open in Chrome in a new window (non-blocking)
+chrome = shutil.which('google-chrome') or shutil.which('chromium') or shutil.which('chromium-browser')
+if chrome:
+    try:
+        subprocess.Popen([chrome, '--new-window', path])
+    except Exception:
+        pass
