@@ -1,0 +1,171 @@
+Vou dividir em duas partes: primeiro o resumo dos comandos que usamos, depois a explicação de como o Git reage quando você altera um arquivo.
+
+---
+
+## 📋 Resumo dos Comandos Utilizados
+
+| Comando | O que faz (explicação simples) |
+|:---|:---|
+| `git status` | Mostra o estado atual: arquivos modificados, novos, deletados, o que está ou não preparado para commit. |
+| `git ls-files` | Lista todos os arquivos que estão sendo rastreados (versionados) pelo Git. |
+| `git ls-files --cached` | Mostra os arquivos que estão no índice (staging area), ou seja, os que serão incluídos no próximo commit. |
+| `git add .` | Adiciona **todas** as alterações (novos, modificados, deletados) da pasta atual para a área de staging. |
+| `git add <arquivo>` | Adiciona apenas o arquivo especificado à área de staging. |
+| `git rm --cached <arquivo>` | Remove o arquivo do rastreamento do Git, mas mantém ele no disco local. |
+| `git rm <arquivo>` | Remove o arquivo do rastreamento **e** apaga do disco. |
+| `git commit -m "mensagem"` | Cria um commit (um marco no histórico) com tudo que está na área de staging. |
+| `git push` | Envia os commits locais para o repositório remoto (GitHub). |
+| `git push --force` | Sobrescreve o histórico remoto com o local (use com cuidado). |
+| `git push origin --delete <branch>` | Apaga uma branch no repositório remoto. |
+| `git branch` | Lista branches locais. |
+| `git branch -r` | Lista branches remotas. |
+| `git branch -f <branch> <commit>` | Força uma branch a apontar para um commit específico (usado para "mover" a master). |
+| `git branch -D <branch>` | Apaga uma branch local (forçado, mesmo se não mesclada). |
+| `git checkout <branch>` | Muda para a branch especificada. |
+| `touch <arquivo>` | Cria um arquivo vazio (Linux/macOS). |
+| `echo "texto" >> <arquivo>` | Acrescenta uma linha ao final do arquivo. |
+| `grep "<padrão>" <arquivo>` | Procura por um padrão dentro de um arquivo. |
+
+---
+
+## 🌿 Como Funciona o Controle de Versão (Git) no Dia a Dia
+
+### Seu cenário atual:
+- Você tem apenas a branch **`master`** (local e remota).
+- A pasta `agentes/` contém seus arquivos `.py`.
+
+### Se você alterar um arquivo `.py` agora, o que acontece?
+
+**Nenhuma branch nova é criada automaticamente.**  
+O Git **nunca** cria branches sem você pedir. Branches só existem se você executar `git branch <nome>` ou `git checkout -b <nome>`.
+
+O fluxo será:
+
+1. **Você edita `agents.py`** (por exemplo, adiciona uma nova função).  
+   Nesse momento, o Git detecta que o arquivo foi modificado. Se rodar `git status`, verá:
+   ```
+   Changes not staged for commit:
+     modified:   agentes/agents.py
+   ```
+
+2. **Você prepara a alteração** com `git add agentes/agents.py`.  
+   Agora o arquivo está na "área de staging" – pronto para ser commitado.
+
+3. **Você cria um commit** com `git commit -m "Adiciona nova função X"`.  
+   O Git:
+   - Tira uma "foto" do estado atual dos arquivos rastreados.
+   - Guarda essa foto no histórico da branch atual (`master`).
+   - O commit recebe um identificador (hash) único.
+
+4. **Você envia ao GitHub** com `git push`.  
+   O commit local vai para o repositório remoto, e a branch `master` remota é atualizada.
+
+### O que um commit gera de alteração no Git?
+
+- Um **novo nó no histórico** da branch.  
+- O ponteiro da branch (ex.: `master`) avança para esse novo commit.  
+- Nenhuma outra branch é afetada.  
+- O histórico anterior permanece intacto (você pode voltar a qualquer commit).
+
+### Visualização simplificada
+
+```
+Antes:   A---B---C  (master)
+Depois:  A---B---C---D  (master)  ← D é seu novo commit
+```
+
+Se você quisesse testar algo sem afetar a `master`, aí sim criaria uma nova branch:
+
+```bash
+git checkout -b teste-nova-funcionalidade
+# ... faz alterações, commits ...
+# Se gostar, faz merge na master; se não, apaga a branch.
+```
+
+Mas no seu dia a dia, enquanto estiver apenas evoluindo o projeto na `master`, o ciclo é sempre: **editar → add → commit → push**.
+
+---
+
+### Em resumo:
+- **Alterar arquivos** = apenas modificações locais.
+- **`git add`** = prepara para o commit.
+- **`git commit`** = registra no histórico local.
+- **`git push`** = sincroniza com o GitHub.
+- **Nenhuma branch nova é criada** a menos que você execute um comando explícito para isso.
+
+Seu projeto agora está limpo e pronto para evoluir dessa forma.
+
+**PR** significa **Pull Request** (em português, "Requisição de Pull"). É um dos recursos mais importantes do GitHub e de outras plataformas de hospedagem de código. Vou explicar de forma prática.
+
+---
+
+## O que é um Pull Request?
+
+É um **pedido formal** para que as alterações feitas em uma **branch separada** sejam incorporadas a outra branch — geralmente da sua branch de trabalho para a `master` (ou `main`).
+
+Pense assim:
+- Você cria uma branch para desenvolver uma nova funcionalidade ou corrigir um bug.
+- Faz commits nessa branch.
+- Quando termina, abre um Pull Request no GitHub. Isso significa: **"Tenho esse código pronto, quero que ele seja revisado e, se estiver ok, incorporado ao projeto principal"**.
+
+---
+
+## Para que serve um PR?
+
+### 1. Revisão de código
+Outras pessoas (ou você mesmo) podem ver exatamente o que mudou, comentar linhas específicas, sugerir melhorias e aprovar as alterações antes do merge.
+
+### 2. Discutir a abordagem
+O PR funciona como um fórum. É possível explicar o porquê da alteração, anexar links, pedir opiniões.
+
+### 3. Integração contínua
+É comum configurar testes automatizados e verificações de qualidade para rodarem sempre que um PR é aberto. Assim, bugs são pegos antes de chegarem à `master`.
+
+### 4. Histórico organizado
+Mesmo em projetos individuais, abrir PRs para cada funcionalidade deixa o histórico do repositório muito mais limpo e documentado, em vez de fazer tudo diretamente na `master`.
+
+---
+
+## Como funciona na prática
+
+### Fluxo com PRs (recomendado)
+
+```bash
+# 1. Cria uma branch nova a partir da master
+git checkout -b feature/nova-funcionalidade
+
+# 2. Trabalha nela, faz commits...
+git add .
+git commit -m "Adiciona função X"
+
+# 3. Envia a branch para o GitHub
+git push -u origin feature/nova-funcionalidade
+```
+
+Agora vá ao GitHub. Ele mostrará um botão amarelo **"Compare & pull request"**. Clique, preencha o título e a descrição do que você fez e submeta.
+
+Pronto, seu PR está aberto! Você pode revisá-lo, pedir revisão de alguém, e quando estiver satisfeito, clica em **"Merge pull request"**. Depois pode apagar a branch.
+
+---
+
+## Exemplo visual no GitHub
+
+```
+Branch master     ← PR aberto da branch 'feature/new-stuff'  
+Branch feature    → commits: A → B → C (novo código)
+```
+
+Quando o PR é mergeado, os commits A, B, C são incorporados à `master`. O resultado é o mesmo que se você tivesse trabalhado direto na `master`, mas com todas as vantagens de revisão e histórico separado.
+
+---
+
+## E se eu quiser continuar só na `master`?
+
+Você pode. Em projetos pessoais simples, é comum fazer commits direto na `master`. O Git em si não exige PRs.
+
+Mas agora que você sabe o que é, pode adotar aos poucos — especialmente quando quiser testar algo sem medo de quebrar o código principal.
+
+---
+
+### Resumo objetivo
+**PR (Pull Request)**: um pedido público para unir uma branch a outra, permitindo revisão, discussão e aprovação antes do merge. É a base da colaboração moderna com Git e GitHub.
