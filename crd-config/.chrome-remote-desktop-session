@@ -1,0 +1,8 @@
+#!/bin/sh
+#manter o processo de sessão vivo, sem lançar novo ambiente gráfico
+while true; do
+  sleep 3600
+done
+#exec /etc/X11/Xsession /usr/bin/gnome-session
+#exec /bin/true
+
